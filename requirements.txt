@@ -1,0 +1,5 @@
+fastapi==0.115.6
+uvicorn==0.34.0
+edge-tts==6.1.0
+pydub==0.25.1</content>
+<parameter name="filePath">d:\workspaces\aiot\aiot_final_project_backtend\requirements.txt
