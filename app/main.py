@@ -35,8 +35,8 @@ async def generate_tts(request: GenerateTTSRequest, background_tasks: Background
         raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")
 
 # Query: 獲取 PCM
-@app.get("/queries/tts/{tts_id}")
-async def get_tts(tts_id: str):
+@app.get("/queries/get-tts-pcm")
+async def get_tts_pcm(tts_id: str):
     pcm_data = TTSService.get_pcm(tts_id)
     if pcm_data is None:
         raise HTTPException(status_code=404, detail="TTS not found or not ready")
@@ -44,7 +44,7 @@ async def get_tts(tts_id: str):
     return Response(content=pcm_data, media_type="audio/pcm")
 
 # Query: 獲取 WAV（從 PCM 轉換）
-@app.get("/queries/tts/{tts_id}/wav")
+@app.get("/queries/get-tts-wav")
 async def get_tts_wav(tts_id: str):
     pcm_data = TTSService.get_pcm(tts_id)
     if pcm_data is None:
