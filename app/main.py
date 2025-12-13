@@ -6,6 +6,10 @@ import logging
 
 app = FastAPI(title="TTS API", description="CQRS-based TTS API with Edge TTS")
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello"}
+
 # 設定日誌
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
