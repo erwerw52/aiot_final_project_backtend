@@ -3,6 +3,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel
 from app.tts_service import TTSService
 import logging
+import base64
 
 app = FastAPI(title="TTS API", description="CQRS-based TTS API with Edge TTS")
 
@@ -25,28 +26,20 @@ async def handle_user_input(request: UserInputRequest):
     # 後續可擴展處理邏輯
     return {"status": "received", "input": request.input}
 
-# Query: 獲取 PCM
-@app.get("/queries/get-tts-pcm")
-async def get_tts_pcm(text: str, voice: str = "zh-TW-HsiaoChenNeural"):
-    if not text.strip():
-        raise HTTPException(status_code=400, detail="Text cannot be empty")
-
-    try:
-        pcm_data = await TTSService.generate_pcm_sync(text, voice)
-        return Response(content=pcm_data, media_type="audio/pcm")
-    except Exception as e:
-        logger.error(f"PCM generation error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"PCM generation failed: {str(e)}")
-
-# Query: 獲取 WAV
+# Query: 獲取 WAV 和時間軸
 @app.get("/queries/get-tts-wav")
 async def get_tts_wav(text: str, voice: str = "zh-TW-HsiaoChenNeural"):
     if not text.strip():
         raise HTTPException(status_code=400, detail="Text cannot be empty")
 
     try:
-        wav_data = await TTSService.generate_wav_sync(text, voice)
-        return Response(content=wav_data, media_type="audio/wav")
+        wav_data, timeline = await TTSService.generate_wav_with_timeline(text, voice)
+        # 將 WAV 編碼為 base64
+        wav_base64 = base64.b64encode(wav_data).decode('utf-8')
+        return {
+            "audioData": wav_base64,
+            "timeLines": [item for item in timeline]
+        }
     except Exception as e:
-        logger.error(f"WAV generation error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"WAV generation failed: {str(e)}")
+        logger.error(f"WAV and timeline generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"WAV and timeline generation failed: {str(e)}")
