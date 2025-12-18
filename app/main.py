@@ -28,9 +28,11 @@ async def handle_user_input(request: UserInputRequest):
 
 # Query: 獲取 WAV 和時間軸
 @app.get("/queries/get-tts-wav")
-async def get_tts_wav(text: str, voice: str = "zh-TW-HsiaoChenNeural"):
+async def get_tts_wav(text: str, voice: int = 0):
     if not text.strip():
         raise HTTPException(status_code=400, detail="Text cannot be empty")
+    if voice not in [0, 1]:
+        raise HTTPException(status_code=400, detail="Voice must be 0 (male) or 1 (female)")
 
     try:
         wav_data, timeline = await TTSService.generate_wav_with_timeline(text, voice)
@@ -38,7 +40,7 @@ async def get_tts_wav(text: str, voice: str = "zh-TW-HsiaoChenNeural"):
         wav_base64 = base64.b64encode(wav_data).decode('utf-8')
         return {
             "audioData": wav_base64,
-            "timeLines": [item for item in timeline]
+            "timeLines": [item.to_dict() for item in timeline]
         }
     except Exception as e:
         logger.error(f"WAV and timeline generation error: {str(e)}")

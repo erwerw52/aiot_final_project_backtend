@@ -1,18 +1,25 @@
 import io
 import edge_tts
 from pydub import AudioSegment
-import base64
-import json
 from app.model.time_line_dto import TimelineDTO
 
 class TTSService:
+    VOICE_MAPPING = {
+        0: "zh-TW-HsiaoChenNeural",  # Female
+        1: "zh-TW-HsiaoYuNeural"  # Male
+    }
+
     @staticmethod
-    async def generate_wav_with_timeline(text: str, voice: str = "zh-TW-HsiaoChenNeural") -> tuple[bytes, list]:
+    async def generate_wav_with_timeline(text: str, voice: int) -> tuple[bytes, list]:
         """
         即時生成 WAV 數據和時間軸 JSON 並返回。
         """
+        if voice not in TTSService.VOICE_MAPPING:
+            raise ValueError("Invalid voice: must be 0 (male) or 1 (female)")
+        
+        actual_voice = TTSService.VOICE_MAPPING[voice]
         try:
-            communicate = edge_tts.Communicate(text, voice, boundary="WordBoundary")
+            communicate = edge_tts.Communicate(text, actual_voice, boundary="WordBoundary")
             audio_data = b""
             timeline = []
             
