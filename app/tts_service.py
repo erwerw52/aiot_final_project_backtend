@@ -1,7 +1,12 @@
 import io
 import edge_tts
+import logging
 from pydub import AudioSegment
 from app.model.time_line_dto import TimelineDTO
+from app.webhook_service import WebhookService
+
+logger = logging.getLogger(__name__)
+
 
 class TTSService:
     VOICE_MAPPING = {
@@ -17,9 +22,23 @@ class TTSService:
         if voice not in TTSService.VOICE_MAPPING:
             raise ValueError("Invalid voice: must be 0 (male) or 1 (female)")
         
+        """ 呼叫 n8n webhook 獲取處理後的文本 (TODO 這邊要討論回傳的格式，現在先做測試) """
+        result = await WebhookService.send_webhook(text)
+
+        response_text = ''
+        response_url = ''
+
+        if result["success"] is False:
+            return ValueError("Webhook service failed to process the text.")
+        else:
+            response_text = result.get("response")['text']
+            response_url = result.get("response")['url']
+        
+        logger.info(f"Processed text from webhook: {response_text}")
+
         actual_voice = TTSService.VOICE_MAPPING[voice]
         try:
-            communicate = edge_tts.Communicate(text, actual_voice, boundary="WordBoundary")
+            communicate = edge_tts.Communicate(response_text, actual_voice, boundary="WordBoundary")
             audio_data = b""
             timeline = []
             
@@ -45,6 +64,6 @@ class TTSService:
             audio.export(wav_buffer, format="wav")
             wav_data = wav_buffer.getvalue()
 
-            return wav_data, timeline
+            return wav_data, timeline, response_url
         except Exception as e:
             raise Exception(f"TTS generation failed: {str(e)}")

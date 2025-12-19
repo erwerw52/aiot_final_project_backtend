@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel
 from app.tts_service import TTSService
+from app.webhook_service import WebhookService
 import logging
 import base64
 
@@ -26,6 +27,33 @@ async def handle_user_input(request: UserInputRequest):
     # 後續可擴展處理邏輯
     return {"status": "received", "input": request.input}
 
+# Webhook: 發送文字到 n8n webhook
+@app.post("/webhook/send")
+async def send_to_webhook(request: UserInputRequest):
+    """
+    發送文字到 n8n webhook 服務
+    """
+    if not request.input.strip():
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+    
+    try:
+        result = await WebhookService.send_webhook(request.input)
+        
+        if result["success"]:
+            return {
+                "status": "success",
+                "message": "Webhook sent successfully",
+                "data": result
+            }
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Webhook failed: {result.get('error', 'Unknown error')}"
+            )
+    except Exception as e:
+        logger.error(f"Webhook sending error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to send webhook: {str(e)}")
+
 # Query: 獲取 WAV 和時間軸
 @app.get("/queries/get-tts-wav")
 async def get_tts_wav(text: str, voice: int = 0):
@@ -35,12 +63,13 @@ async def get_tts_wav(text: str, voice: int = 0):
         raise HTTPException(status_code=400, detail="Voice must be 0 (male) or 1 (female)")
 
     try:
-        wav_data, timeline = await TTSService.generate_wav_with_timeline(text, voice)
+        wav_data, timeline, response_url = await TTSService.generate_wav_with_timeline(text, voice)
         # 將 WAV 編碼為 base64
         wav_base64 = base64.b64encode(wav_data).decode('utf-8')
         return {
             "audioData": wav_base64,
-            "timeLines": [item.to_dict() for item in timeline]
+            "timeLines": [item.to_dict() for item in timeline],
+            "url": response_url
         }
     except Exception as e:
         logger.error(f"WAV and timeline generation error: {str(e)}")
