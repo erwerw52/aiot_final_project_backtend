@@ -29,7 +29,7 @@ class TTSService:
         response_url = ''
 
         if result["success"] is False:
-            return ValueError("Webhook service failed to process the text.")
+            raise ValueError("Webhook service failed to process the text.")
         else:
             response_text = result.get("response")['text']
             response_url = result.get("response")['url']
@@ -64,6 +64,6 @@ class TTSService:
             audio.export(wav_buffer, format="wav")
             wav_data = wav_buffer.getvalue()
 
-            return wav_data, timeline, response_url
+            return wav_data, timeline, response_text, response_url
         except Exception as e:
             raise Exception(f"TTS generation failed: {str(e)}")
