@@ -51,13 +51,80 @@ class UserInputRequest(BaseModel):
             }
         }
 
-# Command: 串接使用者輸入（預留接口，目前僅記錄）
-@app.post(
-    "/commands/user-input",
-    summary="使用者輸入命令（預留接口）",
-    description="接收使用者輸入並記錄，預留供未來擴展處理邏輯使用",
-    tags=["Command"]
+@app.get(
+    "/queries/get-tts",
+    summary="文字轉語音（TTS）",
+    description="將文字轉換為語音，返回音頻數據",
+    tags=["Query"],
+    responses={
+        200: {
+            "description": "成功生成音頻",
+            "content": {
+                "audio/wav": {
+                    "example": "UklGRiQAAABXQVZFZm10IBAAAAABAAEA..."
+                }
+            }
+        },
+        400: {"description": "文字為空或語音參數無效"},
+        500: {"description": "TTS 生成失敗"}
+    }
 )
+async def get_tts( text: str = Query(
+        ...,
+        description="要轉換為語音的文字內容",
+        example="你好世界",
+        min_length=1
+    ),
+    voice: int = Query(
+        0,
+        description="語音類型選擇：0=女聲 (zh-TW-HsiaoChenNeural), 1=男聲 (zh-TW-HsiaoYuNeural)",
+        ge=0,
+        le=1,
+        example=0
+    )):
+    """
+    ## 文字轉語音端點
+    
+    將輸入的文字轉換為語音（WAV 格式），並直接返回 WAV 音頻數據。
+    
+    ### 處理流程
+    1. 使用 Microsoft Edge TTS 引擎生成語音
+    2. 轉換為 16kHz, mono, 16-bit PCM WAV 格式
+    3. 直接返回 WAV 數據作為響應
+    
+    ### 參數
+    - **text**: 要轉換的文字內容（必填，不可為空）
+    - **voice**: 語音類型（選填，預設為 0）
+      - `0`: 女聲 - zh-TW-HsiaoChenNeural
+      - `1`: 男聲 - zh-TW-HsiaoYuNeural
+    
+    ### 回應
+    - 直接返回 WAV 音頻數據（audio/wav）
+    
+    ### 音頻規格
+    - 格式: WAV
+    - 採樣率: 16kHz
+    - 聲道: Mono (單聲道)
+    - 位元深度: 16-bit PCM
+    
+    ### 錯誤處理
+    - 400: 文字為空或語音參數不在有效範圍內（0-1）
+    - 500: TTS 生成失敗（Edge TTS 服務問題）
+    """
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+    if voice not in [0, 1]:
+        raise HTTPException(status_code=400, detail="Voice must be 0 (female) or 1 (male)")
+
+    try:
+        wav_data = await TTSService.generate_wav(text, voice)
+        return Response(content=wav_data, media_type="audio/wav")
+    except Exception as e:
+        logger.error(f"TTS generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")
+
+
+
 async def handle_user_input(request: UserInputRequest):
     """
     ## 使用者輸入命令端點
