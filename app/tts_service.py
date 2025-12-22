@@ -32,7 +32,7 @@ class TTSService:
             raise ValueError("Webhook service failed to process the text.")
         else:
             response_message = result.get("response")['message']
-            response_url = result.get("response")['url']
+            response_url = result.get("response")['html']
         
         logger.info(f"Processed text from webhook: {response_message}")
 
