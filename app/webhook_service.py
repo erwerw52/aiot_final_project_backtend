@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class WebhookService:
     """ 負責與 n8n webhook 服務進行通信的服務類別 (TODO 未來要換成正式的 webhook URL) """
-    WEBHOOK_URL = "https://n8n-projects-aiot.zeabur.app/webhook/my-test-json"
+    WEBHOOK_URL = "https://n8n-projects-aiot.zeabur.app/webhook/travel_planner"
     TIMEOUT = 30.0  # 30 秒超時
     
     @staticmethod
