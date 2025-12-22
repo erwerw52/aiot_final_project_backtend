@@ -56,20 +56,20 @@ class TTSService:
         """ 呼叫 n8n webhook 獲取處理後的文本 (TODO 這邊要討論回傳的格式，現在先做測試) """
         result = await WebhookService.send_webhook(text)
 
-        response_text = ''
+        response_message = ''
         response_url = ''
 
         if result["success"] is False:
             raise ValueError("Webhook service failed to process the text.")
         else:
-            response_text = result.get("response")['text']
-            response_url = result.get("response")['url']
+            response_message = result.get("response")['message']
+            response_url = result.get("response")['html']
         
-        logger.info(f"Processed text from webhook: {response_text}")
+        logger.info(f"Processed text from webhook: {response_message}")
 
         actual_voice = TTSService.VOICE_MAPPING[voice]
         try:
-            communicate = edge_tts.Communicate(response_text, actual_voice, boundary="WordBoundary")
+            communicate = edge_tts.Communicate(response_message, actual_voice, boundary="WordBoundary")
             audio_data = b""
             timeline = []
             
@@ -95,6 +95,6 @@ class TTSService:
             audio.export(wav_buffer, format="wav")
             wav_data = wav_buffer.getvalue()
 
-            return wav_data, timeline, response_text, response_url
+            return wav_data, timeline, response_message, response_url
         except Exception as e:
             raise Exception(f"TTS generation failed: {str(e)}")

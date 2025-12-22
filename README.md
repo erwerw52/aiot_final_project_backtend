@@ -93,4 +93,9 @@ aiot_final_project_backtend/
 
 所有關鍵操作均有日誌記錄，便於追蹤和除錯。
 
-如有問題或建議，歡迎提交 Issue 或 Pull Request。
+### 開發團隊
+   AIOT Final Project Team 12
+   最後更新: 2025/12/13
+
+### 授權
+   本專案僅供學習和研究使用。
