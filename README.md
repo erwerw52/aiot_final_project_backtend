@@ -19,7 +19,9 @@
 - **高品質音頻**: 輸出 16kHz, mono, 16-bit PCM WAV 格式
 - **精準時間軸**: 提供每個單詞的開始和結束時間
 - **Webhook 整合**: 支援文字預處理和外部服務整合
-
+- **Zeabur 架構**:
+   -<img width="278" height="303" alt="image" src="https://github.com/user-attachments/assets/9f7d478a-28bd-4c61-a4db-4676b545d040" />
+ 
 ## 📦 技術棧
 
 - **FastAPI** (0.115.6) - 現代化的 Web 框架
@@ -95,7 +97,7 @@ aiot_final_project_backtend/
 
 ### 開發團隊
    AIOT Final Project Team 12
-   最後更新: 2025/12/13
+   最後更新: 2025/12/24
 
 ### 授權
    本專案僅供學習和研究使用。
