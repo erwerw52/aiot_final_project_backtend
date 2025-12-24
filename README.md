@@ -20,7 +20,8 @@
 - **精準時間軸**: 提供每個單詞的開始和結束時間
 - **Webhook 整合**: 支援文字預處理和外部服務整合
 - **Zeabur 架構**:
-   -<img width="278" height="303" alt="image" src="https://github.com/user-attachments/assets/9f7d478a-28bd-4c61-a4db-4676b545d040" />
+  
+<img width="278" height="303" alt="image" src="https://github.com/user-attachments/assets/9f7d478a-28bd-4c61-a4db-4676b545d040" />
  
 ## 📦 技術棧
 
